@@ -127,11 +127,14 @@ namespace DeepSpace
 			{
 				Pila<ArbolGeneral<Planeta>> pila = new Pila<ArbolGeneral<Planeta>>();
 				pila.apilar(arbol);
-				Pila<ArbolGeneral<Planeta>> p = capturarRaiz(pila);
+				Pila<ArbolGeneral<Planeta>> p = capturarHijo(pila);
 				
-				Planeta origen = p.tope().getDatoRaiz();
-				Planeta destino = p.destino().getDatoRaiz();
-				Movimiento mov = new Movimiento(origen, destino);
+				ArbolGeneral<Planeta> origen = null;
+				while(p.tope().getDatoRaiz().EsPlanetaDeLaIA())
+					origen = p.desapilar();
+				
+				ArbolGeneral<Planeta> destino = p.tope();
+				Movimiento mov = new Movimiento(origen.getDatoRaiz(), destino.getDatoRaiz());
 				return mov;
 			}
 			
@@ -139,57 +142,44 @@ namespace DeepSpace
 			{
 				Pila<ArbolGeneral<Planeta>> pila = new Pila<ArbolGeneral<Planeta>>();
 				pila.apilar(arbol);
-				Pila<ArbolGeneral<Planeta>> p = capturarHijo(pila);
+				Pila<ArbolGeneral<Planeta>> p = capturarRaiz(pila);
 				
 				// busco origen
-				ArbolGeneral<Planeta> origen = null;
+				ArbolGeneral<Planeta> destino = null;
 				while(!p.tope().getDatoRaiz().EsPlanetaDeLaIA())
-					origen = p.desapilar();
+					destino = p.desapilar();
 				
-				Movimiento mov = new Movimiento(p.tope().getDatoRaiz(), origen.getDatoRaiz());
+				ArbolGeneral<Planeta> origen = p.tope();
+				Movimiento mov = new Movimiento(origen.getDatoRaiz(), destino.getDatoRaiz());
 				return mov;
 			}
 		}
 		
-		public Pila<ArbolGeneral<Planeta>> capturarRaiz(Pila<ArbolGeneral<Planeta>> pila)
+		public Pila<ArbolGeneral<Planeta>> capturarHijo(Pila<ArbolGeneral<Planeta>> pila)
 		{
-			List<ArbolGeneral<Planeta>> hijos = pila.tope().getHijos();
-			
-			// por cada hijo
-			foreach(ArbolGeneral<Planeta> hijo in hijos)
+			if(pila.tope().getDatoRaiz().EsPlanetaDeLaIA())
+				return pila;
+			foreach(ArbolGeneral<Planeta> hijo in pila.tope().getHijos())
 			{
-				// añadir al camino
 				pila.apilar(hijo);
-				
-				// si es planeta de la IA, retornar camino
+				capturarHijo(pila);
 				if(pila.tope().getDatoRaiz().EsPlanetaDeLaIA())
-					break;
-				
-				capturarRaiz(pila);
-				if(pila.tope().getDatoRaiz().EsPlanetaDeLaIA())
-					break;
+					return pila;
 				pila.desapilar();
 			}
 			return pila;
 		}
 		
-		public Pila<ArbolGeneral<Planeta>> capturarHijo(Pila<ArbolGeneral<Planeta>> pila)
+		public Pila<ArbolGeneral<Planeta>> capturarRaiz(Pila<ArbolGeneral<Planeta>> pila)
 		{
-			List<ArbolGeneral<Planeta>> hijos = pila.tope().getHijos();
-			
-			// por cada hijo
-			foreach(ArbolGeneral<Planeta> hijo in hijos)
+			if(!pila.tope().getDatoRaiz().EsPlanetaDeLaIA())
+				return pila;
+			foreach(ArbolGeneral<Planeta> hijo in pila.tope().getHijos())
 			{
-				// añadir al camino
 				pila.apilar(hijo);
-				
-				// si es planeta del jugador, retornar camino
+				capturarRaiz(pila);
 				if(!pila.tope().getDatoRaiz().EsPlanetaDeLaIA())
-					break;
-				
-				capturarHijo(pila);
-				if(!pila.tope().getDatoRaiz().EsPlanetaDeLaIA())
-					break;
+					return pila;
 				pila.desapilar();
 			}
 			return pila;

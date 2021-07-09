@@ -32,5 +32,18 @@ namespace DeepSpace
 		public bool esHoja() {
 			return this.getHijos().Count == 0;
 		}
+		
+		public int altura() {
+			if(this.esHoja())
+				return 0;
+			int maxAltura = 0;
+			foreach(ArbolGeneral<T> h in this.getHijos())
+			{
+				int aux = h.altura();
+				if(aux > maxAltura)
+					maxAltura = aux;
+			}
+			return maxAltura + 1;
+		}
 	}
 }

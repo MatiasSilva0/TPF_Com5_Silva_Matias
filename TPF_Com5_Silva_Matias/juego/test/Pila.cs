@@ -25,9 +25,5 @@ namespace DeepSpace
 		public bool esVacia() {
 			return this.datos.Count == 0;
 		}
-		
-		public T destino() {
-			return this.datos[this.datos.Count - 2];
-		}
 	}
 }
