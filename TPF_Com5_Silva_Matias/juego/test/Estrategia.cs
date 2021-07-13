@@ -122,47 +122,56 @@ namespace DeepSpace
 		
 		public Movimiento CalcularMovimiento(ArbolGeneral<Planeta> arbol)
 		{
-			// si la raíz no es del IA
+			// si la raíz no es de la IA
 			if(!arbol.getDatoRaiz().EsPlanetaDeLaIA())
 			{
-				Pila<ArbolGeneral<Planeta>> pila = new Pila<ArbolGeneral<Planeta>>();
-				pila.apilar(arbol);
-				Pila<ArbolGeneral<Planeta>> p = capturarHijo(pila);
-				
-				ArbolGeneral<Planeta> origen = null;
-				while(p.tope().getDatoRaiz().EsPlanetaDeLaIA())
-					origen = p.desapilar();
-				
-				ArbolGeneral<Planeta> destino = p.tope();
-				Movimiento mov = new Movimiento(origen.getDatoRaiz(), destino.getDatoRaiz());
-				return mov;
+			   	// encontrar Bot
+			   	Pila<ArbolGeneral<Planeta>> pila1 = new Pila<ArbolGeneral<Planeta>>();
+			   	pila1.apilar(arbol);
+			   	Pila<ArbolGeneral<Planeta>> pila2 = encontrarBot(pila1);
+			   	
+			   	// buscar subárbol hijo
+			   	Pila<ArbolGeneral<Planeta>> pila3 = new Pila<ArbolGeneral<Planeta>>();
+			   	pila3.apilar(pila2.tope());
+			   	Pila<ArbolGeneral<Planeta>> pila4 = buscarSubarbol(pila3);
+			   	
+			   	// si existe
+			   	if(!pila4.tope().getDatoRaiz().EsPlanetaDeLaIA())
+			   	{
+			   		// retornar camino al hijo
+			   		Planeta destino = pila4.desapilar().getDatoRaiz();
+			   		while(!pila4.tope().getDatoRaiz().EsPlanetaDeLaIA())
+			   			destino = pila4.desapilar().getDatoRaiz();
+			   		Planeta origen = pila4.tope().getDatoRaiz();
+			   		Movimiento mov = new Movimiento(origen, destino);
+			   		return mov;
+			   	}
+			   	
+			   	// si no existe
+			   	else
+			   	{
+			   		// retornar camino a la raíz
+			   		Planeta origen = pila2.desapilar().getDatoRaiz();
+			   		Planeta destino = pila2.tope().getDatoRaiz();
+			   		Movimiento mov = new Movimiento(origen, destino);
+			   		return mov;
+			   	}
 			}
 			
-			else
-			{
-				Pila<ArbolGeneral<Planeta>> pila = new Pila<ArbolGeneral<Planeta>>();
-				pila.apilar(arbol);
-				Pila<ArbolGeneral<Planeta>> p = capturarRaiz(pila);
-				
-				// busco origen
-				ArbolGeneral<Planeta> destino = null;
-				while(!p.tope().getDatoRaiz().EsPlanetaDeLaIA())
-					destino = p.desapilar();
-				
-				ArbolGeneral<Planeta> origen = p.tope();
-				Movimiento mov = new Movimiento(origen.getDatoRaiz(), destino.getDatoRaiz());
-				return mov;
-			}
+			return null;
 		}
 		
-		public Pila<ArbolGeneral<Planeta>> capturarHijo(Pila<ArbolGeneral<Planeta>> pila)
+		public Pila<ArbolGeneral<Planeta>> encontrarBot(Pila<ArbolGeneral<Planeta>> pila)
 		{
+			// si es de la IA, retornar
 			if(pila.tope().getDatoRaiz().EsPlanetaDeLaIA())
 				return pila;
+			
+			// si no es de la IA, recursión por cada hijo
 			foreach(ArbolGeneral<Planeta> hijo in pila.tope().getHijos())
 			{
 				pila.apilar(hijo);
-				capturarHijo(pila);
+				encontrarBot(pila);
 				if(pila.tope().getDatoRaiz().EsPlanetaDeLaIA())
 					return pila;
 				pila.desapilar();
@@ -170,14 +179,17 @@ namespace DeepSpace
 			return pila;
 		}
 		
-		public Pila<ArbolGeneral<Planeta>> capturarRaiz(Pila<ArbolGeneral<Planeta>> pila)
+		public Pila<ArbolGeneral<Planeta>> buscarSubarbol(Pila<ArbolGeneral<Planeta>> pila)
 		{
+			// si no es de la IA, retornar
 			if(!pila.tope().getDatoRaiz().EsPlanetaDeLaIA())
 				return pila;
+			
+			// si es de la IA, recursión por cada hijo
 			foreach(ArbolGeneral<Planeta> hijo in pila.tope().getHijos())
 			{
 				pila.apilar(hijo);
-				capturarRaiz(pila);
+				buscarSubarbol(pila);
 				if(!pila.tope().getDatoRaiz().EsPlanetaDeLaIA())
 					return pila;
 				pila.desapilar();
