@@ -130,6 +130,19 @@ namespace DeepSpace
 			   	pila1.apilar(arbol);
 			   	Pila<ArbolGeneral<Planeta>> pila2 = encontrarBot(pila1);
 			   	
+			   	// reforzar raíz
+			   	Pila<ArbolGeneral<Planeta>> pila5 = new Pila<ArbolGeneral<Planeta>>();
+			   	pila5.apilar(pila2.tope());
+			   	Pila<ArbolGeneral<Planeta>> pila6 = reforzarRaiz(pila5, pila5.tope().getDatoRaiz().population);
+			   	if(pila6.tope() == null)
+			   	{
+			   		pila6.desapilar();
+			   		Planeta origen = pila6.desapilar().getDatoRaiz();
+			   		Planeta destino = pila6.tope().getDatoRaiz();
+			   		Movimiento mov = new Movimiento(origen, destino);
+			   		return mov;
+			   	}
+			   	
 			   	// buscar subárbol hijo
 			   	Pila<ArbolGeneral<Planeta>> pila3 = new Pila<ArbolGeneral<Planeta>>();
 			   	pila3.apilar(pila2.tope());
@@ -158,7 +171,52 @@ namespace DeepSpace
 			   	}
 			}
 			
-			return null;
+			// si la raíz es de la IA
+			else
+			{
+				// reforzar raíz
+			   	Pila<ArbolGeneral<Planeta>> pila3 = new Pila<ArbolGeneral<Planeta>>();
+			   	pila3.apilar(arbol);
+			   	Pila<ArbolGeneral<Planeta>> pila4 = reforzarRaiz(pila3, pila3.tope().getDatoRaiz().population);
+			   	if(pila4.tope() == null)
+			   	{
+			   		pila4.desapilar();
+			   		Planeta ori = pila4.desapilar().getDatoRaiz();
+			   		Planeta dest = pila4.tope().getDatoRaiz();
+			   		Movimiento m = new Movimiento(ori, dest);
+			   		return m;
+			   	}
+			   	
+				// buscar subárbol hijo
+			   	Pila<ArbolGeneral<Planeta>> pila1 = new Pila<ArbolGeneral<Planeta>>();
+			   	pila1.apilar(arbol);
+			   	Pila<ArbolGeneral<Planeta>> pila2 = buscarSubarbol(pila1);
+			 
+			   	// si el planeta a capturar es del jugador
+			   	if(pila2.tope().getDatoRaiz().EsPlanetaDelJugador())
+			   	{
+			   		//y tiene mas población que el origen
+			   		ArbolGeneral<Planeta> d = pila2.desapilar();
+			   	    ArbolGeneral<Planeta> o = pila2.tope();
+			   		if(d.getDatoRaiz().population > 2 * (o.getDatoRaiz().population))
+			   		{
+			   			// reforzar origen
+			   			d = o;
+			   			o = pila2.desapilar();
+			   			Movimiento mv = new Movimiento(o.getDatoRaiz(), d.getDatoRaiz());
+			   			return mv;
+			   		}
+			   		pila2.apilar(d);
+			    }
+			   	
+			    // retornar camino al hijo
+			   	Planeta destino = pila2.desapilar().getDatoRaiz();
+			   	while(!pila2.tope().getDatoRaiz().EsPlanetaDeLaIA())
+			   		destino = pila2.desapilar().getDatoRaiz();
+			   	Planeta origen = pila2.tope().getDatoRaiz();
+			   	Movimiento mov = new Movimiento(origen, destino);
+			   	return mov;
+			}
 		}
 		
 		public Pila<ArbolGeneral<Planeta>> encontrarBot(Pila<ArbolGeneral<Planeta>> pila)
@@ -191,6 +249,31 @@ namespace DeepSpace
 				pila.apilar(hijo);
 				buscarSubarbol(pila);
 				if(!pila.tope().getDatoRaiz().EsPlanetaDeLaIA())
+					return pila;
+				pila.desapilar();
+			}
+			return pila;
+		}
+		
+		public Pila<ArbolGeneral<Planeta>> reforzarRaiz(Pila<ArbolGeneral<Planeta>> pila, uint poblacion)
+		{
+			// si el planeta no es de la IA, retornar
+			if(!pila.tope().getDatoRaiz().EsPlanetaDeLaIA())
+				return pila;
+			
+			// si el planeta tiene más población que la raíz, marcar terminado(null), y retornar
+			if(pila.tope().getDatoRaiz().population > poblacion)
+			{
+				pila.apilar(null);
+				return pila;
+			}
+			
+			// si no, recursión por cada hijo
+			foreach(ArbolGeneral<Planeta> hijo in pila.tope().getHijos())
+			{
+				pila.apilar(hijo);
+				reforzarRaiz(pila, poblacion);
+				if(pila.tope() == null)
 					return pila;
 				pila.desapilar();
 			}
