@@ -47,11 +47,11 @@ namespace DeepSpace
 				foreach(ArbolGeneral<Planeta> hijo in aux.getHijos())
 					c.encolar(hijo);
 				
-				// si población > 3, incremento contador
+				// si es hoja y su población > 3, incremento contador
 				if(aux.esHoja() && aux.getDatoRaiz().population > 3)
 					x = x + 1;
 			}
-			return ("El número de planetas con población mayor a 3 es: "+x);
+			return ("El número de planetas hojas con población mayor a 3 es: "+x);
 		}
 		
 		public String Consulta3( ArbolGeneral<Planeta> arbol)
@@ -126,36 +126,34 @@ namespace DeepSpace
 			if(!arbol.getDatoRaiz().EsPlanetaDeLaIA())
 			{
 			   	// encontrar Bot
-			   	Pila<ArbolGeneral<Planeta>> pila1 = new Pila<ArbolGeneral<Planeta>>();
-			   	pila1.apilar(arbol);
-			   	Pila<ArbolGeneral<Planeta>> pila2 = encontrarBot(pila1);
+			   	Pila<ArbolGeneral<Planeta>> raiz = new Pila<ArbolGeneral<Planeta>>();
+			   	raiz.apilar(arbol);
+			   	Pila<ArbolGeneral<Planeta>> caminoBot = encontrarBot(raiz);
 			   	
 			   	// reforzar raíz
-			   	Pila<ArbolGeneral<Planeta>> pila5 = new Pila<ArbolGeneral<Planeta>>();
-			   	pila5.apilar(pila2.tope());
-			   	Pila<ArbolGeneral<Planeta>> pila6 = reforzarRaiz(pila5, pila5.tope().getDatoRaiz().population);
-			   	if(pila6.tope() == null)
+			   	Pila<ArbolGeneral<Planeta>> subRaiz = new Pila<ArbolGeneral<Planeta>>();
+			   	subRaiz.apilar(caminoBot.tope());
+			   	Pila<ArbolGeneral<Planeta>> caminoR = reforzarRaiz(subRaiz, subRaiz.tope().getDatoRaiz().population);
+			   	if(caminoR.tope() == null)
 			   	{
-			   		pila6.desapilar();
-			   		Planeta origen = pila6.desapilar().getDatoRaiz();
-			   		Planeta destino = pila6.tope().getDatoRaiz();
+			   		caminoR.desapilar();
+			   		Planeta origen = caminoR.desapilar().getDatoRaiz();
+			   		Planeta destino = caminoR.tope().getDatoRaiz();
 			   		Movimiento mov = new Movimiento(origen, destino);
 			   		return mov;
 			   	}
 			   	
-			   	// buscar subárbol hijo
-			   	Pila<ArbolGeneral<Planeta>> pila3 = new Pila<ArbolGeneral<Planeta>>();
-			   	pila3.apilar(pila2.tope());
-			   	Pila<ArbolGeneral<Planeta>> pila4 = buscarSubarbol(pila3);
+			   	// buscar subárbol hijo sin planeta IA
+			   	Pila<ArbolGeneral<Planeta>> subraiz = new Pila<ArbolGeneral<Planeta>>();
+			   	subraiz.apilar(caminoBot.tope());
+			   	Pila<ArbolGeneral<Planeta>> subarbol = buscarSubarbol(subraiz);
 			   	
 			   	// si existe
-			   	if(!pila4.tope().getDatoRaiz().EsPlanetaDeLaIA())
+			   	if(!subarbol.tope().getDatoRaiz().EsPlanetaDeLaIA())
 			   	{
 			   		// retornar camino al hijo
-			   		Planeta destino = pila4.desapilar().getDatoRaiz();
-			   		while(!pila4.tope().getDatoRaiz().EsPlanetaDeLaIA())
-			   			destino = pila4.desapilar().getDatoRaiz();
-			   		Planeta origen = pila4.tope().getDatoRaiz();
+			   		Planeta destino = subarbol.desapilar().getDatoRaiz();
+			   		Planeta origen = subarbol.tope().getDatoRaiz();
 			   		Movimiento mov = new Movimiento(origen, destino);
 			   		return mov;
 			   	}
@@ -164,8 +162,8 @@ namespace DeepSpace
 			   	else
 			   	{
 			   		// retornar camino a la raíz
-			   		Planeta origen = pila2.desapilar().getDatoRaiz();
-			   		Planeta destino = pila2.tope().getDatoRaiz();
+			   		Planeta origen = caminoBot.desapilar().getDatoRaiz();
+			   		Planeta destino = caminoBot.tope().getDatoRaiz();
 			   		Movimiento mov = new Movimiento(origen, destino);
 			   		return mov;
 			   	}
@@ -175,45 +173,24 @@ namespace DeepSpace
 			else
 			{
 				// reforzar raíz
-			   	Pila<ArbolGeneral<Planeta>> pila3 = new Pila<ArbolGeneral<Planeta>>();
-			   	pila3.apilar(arbol);
-			   	Pila<ArbolGeneral<Planeta>> pila4 = reforzarRaiz(pila3, pila3.tope().getDatoRaiz().population);
-			   	if(pila4.tope() == null)
+			   	Pila<ArbolGeneral<Planeta>> raiz = new Pila<ArbolGeneral<Planeta>>();
+			   	raiz.apilar(arbol);
+			   	Pila<ArbolGeneral<Planeta>> CaminoR = reforzarRaiz(raiz, raiz.tope().getDatoRaiz().population);
+			   	if(CaminoR.tope() == null)
 			   	{
-			   		pila4.desapilar();
-			   		Planeta ori = pila4.desapilar().getDatoRaiz();
-			   		Planeta dest = pila4.tope().getDatoRaiz();
+			   		CaminoR.desapilar();
+			   		Planeta ori = CaminoR.desapilar().getDatoRaiz();
+			   		Planeta dest = CaminoR.tope().getDatoRaiz();
 			   		Movimiento m = new Movimiento(ori, dest);
 			   		return m;
 			   	}
 			   	
 				// buscar subárbol hijo
-			   	Pila<ArbolGeneral<Planeta>> pila1 = new Pila<ArbolGeneral<Planeta>>();
-			   	pila1.apilar(arbol);
-			   	Pila<ArbolGeneral<Planeta>> pila2 = buscarSubarbol(pila1);
-			 
-			   	// si el planeta a capturar es del jugador
-			   	if(pila2.tope().getDatoRaiz().EsPlanetaDelJugador())
-			   	{
-			   		//y tiene mas población que el origen
-			   		ArbolGeneral<Planeta> d = pila2.desapilar();
-			   	    ArbolGeneral<Planeta> o = pila2.tope();
-			   		if(d.getDatoRaiz().population > 2 * (o.getDatoRaiz().population))
-			   		{
-			   			// reforzar origen
-			   			d = o;
-			   			o = pila2.desapilar();
-			   			Movimiento mv = new Movimiento(o.getDatoRaiz(), d.getDatoRaiz());
-			   			return mv;
-			   		}
-			   		pila2.apilar(d);
-			    }
+			   	Pila<ArbolGeneral<Planeta>> subarbol = buscarSubarbol(raiz);
 			   	
 			    // retornar camino al hijo
-			   	Planeta destino = pila2.desapilar().getDatoRaiz();
-			   	while(!pila2.tope().getDatoRaiz().EsPlanetaDeLaIA())
-			   		destino = pila2.desapilar().getDatoRaiz();
-			   	Planeta origen = pila2.tope().getDatoRaiz();
+			   	Planeta destino = subarbol.desapilar().getDatoRaiz();
+			   	Planeta origen = subarbol.tope().getDatoRaiz();
 			   	Movimiento mov = new Movimiento(origen, destino);
 			   	return mov;
 			}
